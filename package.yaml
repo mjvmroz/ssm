@@ -53,6 +53,8 @@ library:
     - NoStarIsType
     - KindSignatures
     - PolyKinds
+    - FlexibleInstances
+    - RankNTypes
   dependencies:
     - containers
 

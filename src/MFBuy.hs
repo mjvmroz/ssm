@@ -1,4 +1,11 @@
-module MFBuy where
+module MFBuy (
+  MutualFundPurchase,
+  MutualFundPurchaseS,
+  Props (..),
+  State (..),
+  Init (..),
+  Transition (..),
+) where
 
 import Data.Kind (Type)
 import Machine
@@ -13,8 +20,8 @@ data MutualFundPurchaseS = PendingPurchase | ListedPurchase | ClosedPurchase | F
 
 newtype MFBuyYield = MFBuyYield String deriving (Eq, Show)
 
-instance StateMachine MutualFundPurchase MutualFundPurchaseS MFBuyYield where
-  data Props MutualFundPurchase = VendingMachineProps
+instance (Monad m) => StateMachine m MutualFundPurchase MutualFundPurchaseS MFBuyYield where
+  data Props MutualFundPurchase = Props
     { fund :: MutualFund
     , projectedUnits :: ShareUnits
     , dollars :: Dollars
@@ -37,15 +44,14 @@ instance StateMachine MutualFundPurchase MutualFundPurchaseS MFBuyYield where
   initialize ::
     forall (s0 :: MutualFundPurchaseS).
     Init MutualFundPurchase s0 ->
-    (Props MutualFundPurchase, State MutualFundPurchase s0, MFBuyYield)
-  initialize (InitPending props) = (props, Pending, MFBuyYield "Initialized with Pending State")
+    m (MachineData MutualFundPurchase s0, MFBuyYield)
+  initialize (InitPending props) = pure (MachineData props Pending, MFBuyYield "Initialized with Pending State")
 
   transition ::
     forall (s1 :: MutualFundPurchaseS) (s2 :: MutualFundPurchaseS).
     Transition MutualFundPurchase s1 s2 ->
-    Props MutualFundPurchase ->
-    State MutualFundPurchase s1 ->
-    (State MutualFundPurchase s2, MFBuyYield)
-  transition (List orderId) _ _ = (Listed orderId, MFBuyYield "Listed")
-  transition (Close dollars units) _ _ = (Closed, MFBuyYield ("Closed (" <> show units <> " <-> $" <> show dollars <> ")"))
-  transition Fail _ _ = (Failed, MFBuyYield "Failed")
+    MachineData MutualFundPurchase s1 ->
+    m (State MutualFundPurchase s2, MFBuyYield)
+  transition (List orderId) _ = pure (Listed orderId, MFBuyYield "Listed")
+  transition (Close dollars units) _ = pure (Closed, MFBuyYield ("Closed (" <> show units <> " <-> $" <> show dollars <> ")"))
+  transition Fail _ = pure (Failed, MFBuyYield "Failed")
