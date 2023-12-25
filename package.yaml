@@ -57,6 +57,7 @@ library:
     - RankNTypes
   dependencies:
     - containers
+    - transformers
 
 executables:
   ssm-exe:

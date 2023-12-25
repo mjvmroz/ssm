@@ -25,9 +25,11 @@ source-repository head
 
 library
   exposed-modules:
+      Control.SimpleStateMachine
+      Examples.MutualFunds.Buy
+      Examples.MutualFunds.Common
+      Examples.MutualFunds.Sale
       Lib
-      Machine
-      MFBuy
   other-modules:
       Paths_ssm
   autogen-modules:
@@ -58,6 +60,7 @@ library
   build-depends:
       base >=4.7 && <5
     , containers
+    , transformers
   default-language: Haskell2010
 
 executable ssm-exe
