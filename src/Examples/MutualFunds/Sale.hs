@@ -12,7 +12,16 @@ import Examples.MutualFunds.Common (
 
 data MutualFundPurchase = MutualFundPurchase deriving (Eq, Show)
 
-data MutualFundPurchaseState = Pending | Listed | Closed | Failed deriving (Eq, Show)
+data MutualFundPurchaseState
+  = -- | The purchase has been initialized, but not yet listed.
+    Pending
+  | -- | The purchase has been listed, and issued an order ID.
+    Listed
+  | -- | The purchase has been closed, and the units have been sold.
+    Closed
+  | -- | The purchase has failed.
+    Failed
+  deriving (Eq, Show)
 
 instance (Monad m) => StateMachine m MutualFundPurchase MutualFundPurchaseState where
   data Props MutualFundPurchase = Props
