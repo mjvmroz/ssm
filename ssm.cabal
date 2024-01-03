@@ -28,6 +28,8 @@ library
       Control.SimpleStateMachine
       Examples.MutualFunds.Buy
       Examples.MutualFunds.Common
+      Examples.MutualFunds.Demo
+      Examples.MutualFunds.ExampleTypeable
       Examples.MutualFunds.Sale
       Lib
   other-modules:
@@ -56,6 +58,11 @@ library
       PolyKinds
       FlexibleInstances
       RankNTypes
+      DeriveGeneric
+      FlexibleContexts
+      GeneralizedNewtypeDeriving
+      TypeOperators
+      ExistentialQuantification
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5

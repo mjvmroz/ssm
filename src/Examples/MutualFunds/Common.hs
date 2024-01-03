@@ -1,5 +1,7 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Examples.MutualFunds.Common (
-  MutualFund,
+  MutualFund (..),
   OrderId,
   Dollars,
   ShareUnits,
@@ -11,4 +13,4 @@ type OrderId = Int
 type Dollars = Int
 type ShareUnits = Int
 
-newtype LogYield = LogYield String deriving (Eq, Show)
+newtype LogYield = LogYield String deriving (Eq, Show, Semigroup)

@@ -1,3 +1,6 @@
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+
 module Examples.MutualFunds.Buy (
   MutualFundPurchase,
   MutualFundPurchaseState (..),
@@ -8,6 +11,7 @@ module Examples.MutualFunds.Buy (
 ) where
 
 import Control.SimpleStateMachine (MachineData (MachineData), StateMachine (..))
+import Data.Data
 import Data.Kind (Type)
 import Examples.MutualFunds.Common (
   Dollars,
@@ -19,7 +23,7 @@ import Examples.MutualFunds.Common (
 
 data MutualFundPurchase = MutualFundPurchase deriving (Eq, Show)
 
-data MutualFundPurchaseState = Pending | Listed | Closed | Failed deriving (Eq, Show)
+data MutualFundPurchaseState = Pending | Listed | Closed | Failed deriving (Eq, Show, Typeable)
 
 instance (Monad m) => StateMachine m MutualFundPurchase MutualFundPurchaseState where
   data Props MutualFundPurchase = Props
@@ -29,10 +33,11 @@ instance (Monad m) => StateMachine m MutualFundPurchase MutualFundPurchaseState 
     }
 
   data StateData MutualFundPurchase :: MutualFundPurchaseState -> Type where
-    PendingData :: StateData MutualFundPurchase 'Pending
-    ListedData :: OrderId -> StateData MutualFundPurchase 'Listed
-    ClosedData :: StateData MutualFundPurchase 'Closed
-    FailedData :: StateData MutualFundPurchase 'Failed
+    PendingData :: (Typeable (StateData MutualFundPurchase 'Pending)) => StateData MutualFundPurchase 'Pending
+    ListedData :: (Typeable (StateData MutualFundPurchase 'Listed)) => OrderId -> StateData MutualFundPurchase 'Listed
+    ClosedData :: (Typeable (StateData MutualFundPurchase 'Closed)) => StateData MutualFundPurchase 'Closed
+    FailedData :: (Typeable (StateData MutualFundPurchase 'Failed)) => StateData MutualFundPurchase 'Failed
+    deriving (Typeable)
 
   data Transition MutualFundPurchase :: MutualFundPurchaseState -> MutualFundPurchaseState -> Type -> Type where
     List :: OrderId -> Transition MutualFundPurchase 'Pending 'Listed LogYield
