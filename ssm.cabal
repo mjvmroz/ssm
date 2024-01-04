@@ -31,6 +31,7 @@ library
       Examples.MutualFunds.Demo
       Examples.MutualFunds.ExampleTypeable
       Examples.MutualFunds.Sale
+      Examples.MutualFunds.Unified
       Lib
   other-modules:
       Paths_ssm
@@ -63,6 +64,7 @@ library
       GeneralizedNewtypeDeriving
       TypeOperators
       ExistentialQuantification
+      DeriveDataTypeable
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
