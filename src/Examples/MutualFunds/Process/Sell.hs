@@ -46,7 +46,7 @@ instance (Monad m) => StateMachine m 'Sell State where
     InitPending :: Props 'Sell -> Init 'Sell 'Pending LogYield
 
   initialize :: forall (s0 :: State) yield. Init 'Sell s0 yield -> m (MachineData 'Sell s0, yield)
-  initialize (InitPending props) = pure (MachineData @m props PendingData, LogYield "Initialized with Pending State")
+  initialize (InitPending props) = pure (MachineData props PendingData, LogYield "Initialized with Pending State")
 
   transitionState ::
     forall (s1 :: State) (s2 :: State) yield.

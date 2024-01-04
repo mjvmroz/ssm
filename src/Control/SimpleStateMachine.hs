@@ -17,9 +17,8 @@ import Data.Kind (Type)
 {- Represents the current state of a machine of known type but dynamic state. -}
 data AnyMachineData machineTag stateKind where
   AnyMachineData ::
-    forall m machineTag stateKind {stateTag :: stateKind}.
-    ( StateMachine m machineTag stateKind
-    , Typeable machineTag
+    forall machineTag stateKind {stateTag :: stateKind}.
+    ( Typeable machineTag
     , Typeable stateTag
     ) =>
     MachineData machineTag stateTag ->
@@ -33,8 +32,8 @@ data AnyMachineData machineTag stateKind where
 -}
 data MachineData machineTag stateTag where
   MachineData ::
-    forall m machineTag stateKind (stateTag :: stateKind).
-    (StateMachine m machineTag stateKind, Typeable machineTag, Typeable stateTag) =>
+    forall machineTag stateKind (stateTag :: stateKind).
+    (Typeable machineTag, Typeable stateTag) =>
     { props :: Props machineTag
     , state :: StateData machineTag stateTag
     } ->
@@ -94,7 +93,7 @@ transition ::
   m (MachineData machineTag s2, yield)
 transition t d = transform <$> transitionState t d
  where
-  transform (newState, yield) = (MachineData @m d.props newState, yield)
+  transform (newState, yield) = (MachineData d.props newState, yield)
 
 -- | Initialize a state machine. This should actually act on the yield, but for now we'll discard it.
 initBlind ::
@@ -121,7 +120,7 @@ dynamicTransition ::
   m (Maybe (MachineData machineTag targetState, yield))
 dynamicTransition t (AnyMachineData (MachineData props actualState :: MachineData machineTag actualState)) =
   case eqT @actualState @expectedState of
-    Just Refl -> Just <$> transition t (MachineData @m props actualState)
+    Just Refl -> Just <$> transition t (MachineData props actualState)
     Nothing -> pure Nothing
 
 dynamicTransitionBlind ::
