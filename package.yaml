@@ -61,6 +61,7 @@ library:
     - TypeOperators
     - ExistentialQuantification
     - DeriveDataTypeable
+    - StandaloneDeriving
   dependencies:
     - containers
     - transformers

@@ -34,7 +34,7 @@ data AnyMachineData machineTag stateKind where
 data MachineData machineTag stateTag where
   MachineData ::
     forall machineTag stateKind (stateTag :: stateKind).
-    (Typeable machineTag, Typeable stateTag) =>
+    (Typeable stateTag) =>
     { props :: Props machineTag
     , state :: StateData machineTag stateTag
     } ->
@@ -65,7 +65,7 @@ instance (Show (Props machineTag), Show (StateData machineTag stateTag)) => Show
   more cases than not, those yields will have to be acted upon against some real world system, which might fail if
   only due to @IO@ being inherently fallible due to disease, famine, war, solar flares, etc.
 -}
-class (Monad m, Typeable machineTag) => StateMachine m machineTag stateKind | machineTag -> stateKind where
+class (Monad m) => StateMachine m machineTag stateKind | machineTag -> stateKind where
   data Props machineTag :: Type
   data StateData machineTag :: stateKind -> Type
 
