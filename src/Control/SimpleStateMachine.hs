@@ -113,7 +113,7 @@ transitionBlind ::
 transitionBlind t d = fst <$> transition t d
 
 dynamicTransition ::
-  forall m machineKind {machineTag :: machineKind} stateKind {expectedState :: stateKind} {targetState :: stateKind} yield.
+  forall m machineTag stateKind {expectedState :: stateKind} {targetState :: stateKind} yield.
   (StateMachine m machineTag stateKind, Typeable expectedState, Typeable targetState) =>
   Transition machineTag expectedState targetState yield ->
   AnyMachineData machineTag stateKind ->
@@ -124,7 +124,7 @@ dynamicTransition t (AnyMachineData (MachineData props actualState :: MachineDat
     Nothing -> pure Nothing
 
 dynamicTransitionBlind ::
-  forall m machineKind {machineTag :: machineKind} stateKind {expectedState :: stateKind} {targetState :: stateKind} yield.
+  forall m machineTag stateKind {expectedState :: stateKind} {targetState :: stateKind} yield.
   (StateMachine m machineTag stateKind, Typeable expectedState, Typeable targetState) =>
   Transition machineTag expectedState targetState yield ->
   AnyMachineData machineTag stateKind ->
