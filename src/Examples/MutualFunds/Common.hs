@@ -6,6 +6,7 @@ module Examples.MutualFunds.Common (
   Dollars,
   ShareUnits,
   LogYield (..),
+  InvestmentProcess (..),
 ) where
 
 data MutualFund = MULSX | VUSXX deriving (Eq, Ord, Show)
@@ -14,3 +15,5 @@ type Dollars = Int
 type ShareUnits = Int
 
 newtype LogYield = LogYield String deriving (Eq, Show, Semigroup)
+
+data InvestmentProcess = Buy | Sell deriving (Eq, Show, Ord)

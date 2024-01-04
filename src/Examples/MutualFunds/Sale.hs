@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
 module Examples.MutualFunds.Sale where
 
 import Control.SimpleStateMachine (MachineData (MachineData), StateMachine (..))
@@ -8,11 +9,10 @@ import Examples.MutualFunds.Common (
   MutualFund,
   OrderId,
   ShareUnits,
+  InvestmentProcess (Sell),
  )
 
-data MutualFundSale = MutualFundSale deriving (Eq, Show)
-
-data MutualFundSaleState
+data SellState
   = -- | The sale has been initialized, but not yet listed.
     Pending
   | -- | The sale has been listed, and issued an order ID.
@@ -23,35 +23,35 @@ data MutualFundSaleState
     Failed
   deriving (Eq, Show)
 
-instance (Monad m) => StateMachine m MutualFundSale MutualFundSaleState where
-  data Props MutualFundSale = Props
+instance (Monad m) => StateMachine m 'Sell SellState where
+  data Props 'Sell = Props
     { fund :: MutualFund
     , projectedUnits :: ShareUnits
     , dollars :: Dollars
     }
 
-  data StateData MutualFundSale :: MutualFundSaleState -> Type where
-    PendingData :: StateData MutualFundSale 'Pending
-    ListedData :: OrderId -> StateData MutualFundSale 'Listed
-    ClosedData :: StateData MutualFundSale 'Closed
-    FailedData :: StateData MutualFundSale 'Failed
+  data StateData 'Sell :: SellState -> Type where
+    PendingData :: StateData 'Sell 'Pending
+    ListedData :: OrderId -> StateData 'Sell 'Listed
+    ClosedData :: StateData 'Sell 'Closed
+    FailedData :: StateData 'Sell 'Failed
 
-  data Transition MutualFundSale :: MutualFundSaleState -> MutualFundSaleState -> Type -> Type where
-    List :: OrderId -> Transition MutualFundSale 'Pending 'Listed LogYield
-    Close :: Dollars -> ShareUnits -> Transition MutualFundSale 'Listed 'Closed LogYield
-    Fail :: Transition MutualFundSale 'Pending 'Failed LogYield
+  data Transition 'Sell :: SellState -> SellState -> Type -> Type where
+    List :: OrderId -> Transition 'Sell 'Pending 'Listed LogYield
+    Close :: Dollars -> ShareUnits -> Transition 'Sell 'Listed 'Closed LogYield
+    Fail :: Transition 'Sell 'Pending 'Failed LogYield
 
-  data Init MutualFundSale :: MutualFundSaleState -> Type -> Type where
-    InitPending :: Props MutualFundSale -> Init MutualFundSale 'Pending LogYield
+  data Init 'Sell :: SellState -> Type -> Type where
+    InitPending :: Props 'Sell -> Init 'Sell 'Pending LogYield
 
-  initialize :: forall (s0 :: MutualFundSaleState) yield. Init MutualFundSale s0 yield -> m (MachineData MutualFundSale s0, yield)
+  initialize :: forall (s0 :: SellState) yield. Init 'Sell s0 yield -> m (MachineData 'Sell s0, yield)
   initialize (InitPending props) = pure (MachineData props PendingData, LogYield "Initialized with Pending State")
 
   transitionState ::
-    forall (s1 :: MutualFundSaleState) (s2 :: MutualFundSaleState) yield.
-    Transition MutualFundSale s1 s2 yield ->
-    MachineData MutualFundSale s1 ->
-    m (StateData MutualFundSale s2, yield)
+    forall (s1 :: SellState) (s2 :: SellState) yield.
+    Transition 'Sell s1 s2 yield ->
+    MachineData 'Sell s1 ->
+    m (StateData 'Sell s2, yield)
   transitionState (List orderId) _ = pure (ListedData orderId, LogYield "Listed")
   transitionState (Close dollars units) _ = pure (ClosedData, LogYield ("Closed (" <> show units <> " <-> $" <> show dollars <> ")"))
   transitionState Fail _ = pure (FailedData, LogYield "Failed")

@@ -1,9 +1,7 @@
-{-# LANGUAGE DeriveDataTypeable #-}
-{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Examples.MutualFunds.Buy (
-  MutualFundPurchase,
-  MutualFundPurchaseState (..),
+  BuyState (..),
   Props (..),
   StateData (..),
   Init (..),
@@ -11,7 +9,6 @@ module Examples.MutualFunds.Buy (
 ) where
 
 import Control.SimpleStateMachine (MachineData (MachineData), StateMachine (..))
-import Data.Data
 import Data.Kind (Type)
 import Examples.MutualFunds.Common (
   Dollars,
@@ -19,45 +16,48 @@ import Examples.MutualFunds.Common (
   MutualFund,
   OrderId,
   ShareUnits,
+  InvestmentProcess (Buy),
  )
 
-data MutualFundPurchase = MutualFundPurchase deriving (Eq, Show)
+data BuyState
+  = Pending
+  | Listed
+  | Closed
+  | Failed
+  deriving (Eq, Show)
 
-data MutualFundPurchaseState = Pending | Listed | Closed | Failed deriving (Eq, Show, Typeable)
-
-instance (Monad m) => StateMachine m MutualFundPurchase MutualFundPurchaseState where
-  data Props MutualFundPurchase = Props
+instance (Monad m) => StateMachine m 'Buy BuyState where
+  data Props 'Buy = Props
     { fund :: MutualFund
     , projectedUnits :: ShareUnits
     , dollars :: Dollars
     }
 
-  data StateData MutualFundPurchase :: MutualFundPurchaseState -> Type where
-    PendingData :: (Typeable (StateData MutualFundPurchase 'Pending)) => StateData MutualFundPurchase 'Pending
-    ListedData :: (Typeable (StateData MutualFundPurchase 'Listed)) => OrderId -> StateData MutualFundPurchase 'Listed
-    ClosedData :: (Typeable (StateData MutualFundPurchase 'Closed)) => StateData MutualFundPurchase 'Closed
-    FailedData :: (Typeable (StateData MutualFundPurchase 'Failed)) => StateData MutualFundPurchase 'Failed
-    deriving (Typeable)
+  data StateData 'Buy :: BuyState -> Type where
+    PendingData :: StateData 'Buy 'Pending
+    ListedData :: OrderId -> StateData 'Buy 'Listed
+    ClosedData :: StateData 'Buy 'Closed
+    FailedData :: StateData 'Buy 'Failed
 
-  data Transition MutualFundPurchase :: MutualFundPurchaseState -> MutualFundPurchaseState -> Type -> Type where
-    List :: OrderId -> Transition MutualFundPurchase 'Pending 'Listed LogYield
-    Close :: Dollars -> ShareUnits -> Transition MutualFundPurchase 'Listed 'Closed LogYield
-    Fail :: Transition MutualFundPurchase 'Pending 'Failed LogYield
+  data Transition 'Buy :: BuyState -> BuyState -> Type -> Type where
+    List :: OrderId -> Transition 'Buy 'Pending 'Listed LogYield
+    Close :: Dollars -> ShareUnits -> Transition 'Buy 'Listed 'Closed LogYield
+    Fail :: Transition 'Buy 'Pending 'Failed LogYield
 
-  data Init MutualFundPurchase :: MutualFundPurchaseState -> Type -> Type where
-    InitPending :: Props MutualFundPurchase -> Init MutualFundPurchase 'Pending LogYield
+  data Init 'Buy :: BuyState -> Type -> Type where
+    InitPending :: Props 'Buy -> Init 'Buy 'Pending LogYield
 
   initialize ::
-    forall (s0 :: MutualFundPurchaseState) yield.
-    Init MutualFundPurchase s0 yield ->
-    m (MachineData MutualFundPurchase s0, yield)
+    forall (s0 :: BuyState) yield.
+    Init 'Buy s0 yield ->
+    m (MachineData 'Buy s0, yield)
   initialize (InitPending props) = pure (MachineData props PendingData, LogYield "Initialized with Pending State")
 
   transitionState ::
-    forall (s1 :: MutualFundPurchaseState) (s2 :: MutualFundPurchaseState) yield.
-    Transition MutualFundPurchase s1 s2 yield ->
-    MachineData MutualFundPurchase s1 ->
-    m (StateData MutualFundPurchase s2, yield)
+    forall (s1 :: BuyState) (s2 :: BuyState) yield.
+    Transition 'Buy s1 s2 yield ->
+    MachineData 'Buy s1 ->
+    m (StateData 'Buy s2, yield)
   transitionState (List orderId) _ = pure (ListedData orderId, LogYield "Listed")
   transitionState (Close dollars units) _ = pure (ClosedData, LogYield ("Closed (" <> show units <> " <-> $" <> show dollars <> ")"))
   transitionState Fail _ = pure (FailedData, LogYield "Failed")

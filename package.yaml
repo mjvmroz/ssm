@@ -60,6 +60,7 @@ library:
     - GeneralizedNewtypeDeriving
     - TypeOperators
     - ExistentialQuantification
+    - DeriveDataTypeable
   dependencies:
     - containers
     - transformers
