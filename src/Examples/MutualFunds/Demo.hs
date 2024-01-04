@@ -4,7 +4,7 @@ import Control.SimpleStateMachine qualified as SSM
 import Examples.MutualFunds.Buy qualified as Buy
 import Examples.MutualFunds.Common
 
-example :: (SSM.StateMachine m 'Buy Buy.BuyState) => m (SSM.MachineData 'Buy Buy.Closed)
+example :: (SSM.StateMachine m 'Buy Buy.State) => m (SSM.MachineData 'Buy Buy.Closed)
 example = do
   md1 <- SSM.initBlind (Buy.InitPending (Buy.Props MULSX 100 1000))
   md2 <- SSM.transitionBlind (Buy.List 1) md1

@@ -1,46 +1,53 @@
 module Examples.MutualFunds.Unified where
 
 import Control.SimpleStateMachine qualified as SSM
-import Data.Kind ( Type )
+import Data.Kind (Type)
 import Data.Map.Strict qualified as Map
-import Examples.MutualFunds.Common ( InvestmentProcess(..) )
+import Examples.MutualFunds.Buy qualified as Buy
+import Examples.MutualFunds.Common (InvestmentProcess (..))
+import Examples.MutualFunds.Sell qualified as Sell
 
 data InvestmentProcessId (p :: InvestmentProcess) id where
   BuyId :: id -> InvestmentProcessId 'Buy id
   SellId :: id -> InvestmentProcessId 'Sell id
 
 data InvestmentProcessData (p :: InvestmentProcess) :: Type where
-  BuyData :: SSM.AnyMachineData 'Buy -> InvestmentProcessData 'Buy
-  SellData :: SSM.AnyMachineData 'Sell -> InvestmentProcessData 'Sell
+  BuyData :: SSM.AnyMachineData 'Buy Buy.State -> InvestmentProcessData 'Buy
+  SellData :: SSM.AnyMachineData 'Sell Sell.State -> InvestmentProcessData 'Sell
+
+-- type family AnyInvestmentMachineData (p :: InvestmentProcess) :: Type where
+--   AnyInvestmentMachineData 'Buy = SSM.AnyMachineData 'Buy
+--   AnyInvestmentMachineData 'Sell = Sell.MutualFundSale
 
 data AnyInvestmentProcessData where
   AnyInvestmentProcessData :: InvestmentProcessData p -> AnyInvestmentProcessData
 
-data InvestmentProcessPool id = (Ord id) => InvestmentProcessPool
-  { buys :: Map.Map id (SSM.AnyMachineData 'Buy)
-  , sells :: Map.Map id (SSM.AnyMachineData 'Sell)
+data InvestmentProcessPool id = (Ord id) =>
+  InvestmentProcessPool
+  { buys :: Map.Map id (SSM.AnyMachineData 'Buy Buy.State)
+  , sells :: Map.Map id (SSM.AnyMachineData 'Sell Sell.State)
   }
 
 instance Semigroup (InvestmentProcessPool id) where
   (<>) :: InvestmentProcessPool id -> InvestmentProcessPool id -> InvestmentProcessPool id
-  InvestmentProcessPool { buys = buys1, sells = sells1 }
-    <> InvestmentProcessPool { buys = buys2, sells = sells2 }
-    = InvestmentProcessPool
-      { buys = buys1 <> buys2
-      , sells = sells1 <> sells2
-      }
+  InvestmentProcessPool{buys = buys1, sells = sells1}
+    <> InvestmentProcessPool{buys = buys2, sells = sells2} =
+      InvestmentProcessPool
+        { buys = buys1 <> buys2
+        , sells = sells1 <> sells2
+        }
 
-instance Ord id => Monoid (InvestmentProcessPool id) where
+instance (Ord id) => Monoid (InvestmentProcessPool id) where
   mempty :: InvestmentProcessPool id
-  mempty = InvestmentProcessPool { buys = Map.empty, sells = Map.empty }
+  mempty = InvestmentProcessPool{buys = Map.empty, sells = Map.empty}
 
-groupByProcessType :: forall id. Ord id => Map.Map id AnyInvestmentProcessData -> InvestmentProcessPool id
+groupByProcessType :: forall id. (Ord id) => Map.Map id AnyInvestmentProcessData -> InvestmentProcessPool id
 groupByProcessType = Map.foldrWithKey go mempty
-  where
-    go :: id -> AnyInvestmentProcessData -> InvestmentProcessPool id -> InvestmentProcessPool id
-    go processId (AnyInvestmentProcessData (BuyData md)) pool = pool { buys = Map.insert processId md pool.buys }
-    go processId (AnyInvestmentProcessData (SellData md)) pool = pool { sells = Map.insert processId md pool.sells }
+ where
+  go :: id -> AnyInvestmentProcessData -> InvestmentProcessPool id -> InvestmentProcessPool id
+  go processId (AnyInvestmentProcessData (BuyData md)) pool = pool{buys = Map.insert processId md pool.buys}
+  go processId (AnyInvestmentProcessData (SellData md)) pool = pool{sells = Map.insert processId md pool.sells}
 
-resolveById :: Ord id => InvestmentProcessId p id -> InvestmentProcessPool id -> Maybe (SSM.AnyMachineData p)
-resolveById (BuyId pId) pool = Map.lookup pId pool.buys
-resolveById (SellId pId) pool = Map.lookup pId pool.sells
+-- resolveById :: (Ord id) => InvestmentProcessId p id -> InvestmentProcessPool id -> Maybe (SSM.AnyMachineData p (SSM.State p))
+-- resolveById (BuyId pId) pool = Map.lookup pId pool.buys
+-- resolveById (SellId pId) pool = Map.lookup pId pool.sells

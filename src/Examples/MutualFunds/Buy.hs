@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 module Examples.MutualFunds.Buy (
-  BuyState (..),
+  State (..),
   Props (..),
   StateData (..),
   Init (..),
@@ -12,49 +12,49 @@ import Control.SimpleStateMachine (MachineData (MachineData), StateMachine (..))
 import Data.Kind (Type)
 import Examples.MutualFunds.Common (
   Dollars,
+  InvestmentProcess (Buy),
   LogYield (..),
   MutualFund,
   OrderId,
   ShareUnits,
-  InvestmentProcess (Buy),
  )
 
-data BuyState
+data State
   = Pending
   | Listed
   | Closed
   | Failed
   deriving (Eq, Show)
 
-instance (Monad m) => StateMachine m 'Buy BuyState where
+instance (Monad m) => StateMachine m 'Buy State where
   data Props 'Buy = Props
     { fund :: MutualFund
     , projectedUnits :: ShareUnits
     , dollars :: Dollars
     }
 
-  data StateData 'Buy :: BuyState -> Type where
+  data StateData 'Buy :: State -> Type where
     PendingData :: StateData 'Buy 'Pending
     ListedData :: OrderId -> StateData 'Buy 'Listed
     ClosedData :: StateData 'Buy 'Closed
     FailedData :: StateData 'Buy 'Failed
 
-  data Transition 'Buy :: BuyState -> BuyState -> Type -> Type where
+  data Transition 'Buy :: State -> State -> Type -> Type where
     List :: OrderId -> Transition 'Buy 'Pending 'Listed LogYield
     Close :: Dollars -> ShareUnits -> Transition 'Buy 'Listed 'Closed LogYield
     Fail :: Transition 'Buy 'Pending 'Failed LogYield
 
-  data Init 'Buy :: BuyState -> Type -> Type where
+  data Init 'Buy :: State -> Type -> Type where
     InitPending :: Props 'Buy -> Init 'Buy 'Pending LogYield
 
   initialize ::
-    forall (s0 :: BuyState) yield.
+    forall (s0 :: State) yield.
     Init 'Buy s0 yield ->
     m (MachineData 'Buy s0, yield)
-  initialize (InitPending props) = pure (MachineData props PendingData, LogYield "Initialized with Pending State")
+  initialize (InitPending props) = pure (MachineData @m props PendingData, LogYield "Initialized with Pending State")
 
   transitionState ::
-    forall (s1 :: BuyState) (s2 :: BuyState) yield.
+    forall (s1 :: State) (s2 :: State) yield.
     Transition 'Buy s1 s2 yield ->
     MachineData 'Buy s1 ->
     m (StateData 'Buy s2, yield)

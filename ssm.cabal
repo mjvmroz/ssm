@@ -30,7 +30,7 @@ library
       Examples.MutualFunds.Common
       Examples.MutualFunds.Demo
       Examples.MutualFunds.ExampleTypeable
-      Examples.MutualFunds.Sale
+      Examples.MutualFunds.Sell
       Examples.MutualFunds.Unified
       Lib
   other-modules:
