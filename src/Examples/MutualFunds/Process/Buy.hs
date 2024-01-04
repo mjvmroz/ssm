@@ -1,4 +1,6 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Examples.MutualFunds.Process.Buy (
   State (..),
@@ -61,3 +63,11 @@ instance (Monad m) => StateMachine m 'Buy State where
   transitionState (List orderId) _ = pure (ListedData orderId, LogYield "Listed")
   transitionState (Close dollars units) _ = pure (ClosedData, LogYield ("Closed (" <> show units <> " <-> $" <> show dollars <> ")"))
   transitionState Fail _ = pure (FailedData, LogYield "Failed")
+
+deriving instance Show (Props 'Buy)
+
+instance forall (s :: State). Show (StateData 'Buy s) where
+  show PendingData = "PendingData"
+  show (ListedData orderId) = "ListedData " <> show orderId
+  show ClosedData = "ClosedData"
+  show FailedData = "FailedData"

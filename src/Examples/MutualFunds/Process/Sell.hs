@@ -56,3 +56,11 @@ instance (Monad m) => StateMachine m 'Sell State where
   transitionState (List orderId) _ = pure (ListedData orderId, LogYield "Listed")
   transitionState (Close dollars units) _ = pure (ClosedData, LogYield ("Closed (" <> show units <> " <-> $" <> show dollars <> ")"))
   transitionState Fail _ = pure (FailedData, LogYield "Failed")
+
+deriving instance Show (Props 'Sell)
+
+instance forall (s :: State). Show (StateData 'Sell s) where
+  show PendingData = "PendingData"
+  show (ListedData orderId) = "ListedData " <> show orderId
+  show ClosedData = "ClosedData"
+  show FailedData = "FailedData"

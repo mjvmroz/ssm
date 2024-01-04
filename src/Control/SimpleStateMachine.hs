@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Control.SimpleStateMachine (
   StateMachine (..),
@@ -11,8 +12,8 @@ module Control.SimpleStateMachine (
   dynamicTransitionBlind,
 ) where
 
-import Data.Data (Typeable, eqT, (:~:) (Refl))
 import Data.Kind (Type)
+import Data.Typeable
 
 {- Represents the current state of a machine of known type but dynamic state. -}
 data AnyMachineData machineTag stateKind where
@@ -38,6 +39,9 @@ data MachineData machineTag stateTag where
     , state :: StateData machineTag stateTag
     } ->
     MachineData machineTag stateTag
+
+instance (Show (Props machineTag), Show (StateData machineTag stateTag)) => Show (MachineData machineTag stateTag) where
+  show (MachineData props state) = mconcat ["MachineData {props = ", show props, ", ", "state = ", show state, "}"]
 
 {- |
   A state machine is a relationship between types that represent a finite state machine:
