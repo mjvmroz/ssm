@@ -20,12 +20,12 @@ dynamicClose :: SSM.AnyMachineData 'Buy Buy.State -> Maybe (SSM.MachineData 'Buy
 dynamicClose = runIdentity . SSM.dynamicTransitionBlind (Buy.Close 1000 100)
 
 -- >>> closed
--- MachineData {props = Props {fund = MULSX, projectedUnits = 100, dollars = 1000}, state = ClosedData}
+-- MachineData 'Buy 'Closed {props = Props {fund = MULSX, projectedUnits = 100, dollars = 1000}, state = ClosedData}
 closed :: SSM.MachineData Buy Buy.Closed
 closed = close listed
 
 -- >>> closedViaDyn
--- Just MachineData {props = Props {fund = MULSX, projectedUnits = 100, dollars = 1000}, state = ClosedData}
+-- Just MachineData 'Buy 'Closed {props = Props {fund = MULSX, projectedUnits = 100, dollars = 1000}, state = ClosedData}
 closedViaDyn :: Maybe (SSM.MachineData Buy Buy.Closed)
 closedViaDyn = dynamicClose dynamicListed
 
