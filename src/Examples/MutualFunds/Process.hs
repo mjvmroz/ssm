@@ -1,23 +1,23 @@
-module Examples.MutualFunds.Unified where
+module Examples.MutualFunds.Process where
 
 import Control.SimpleStateMachine qualified as SSM
 import Data.Kind (Type)
 import Data.Map.Strict qualified as Map
-import Examples.MutualFunds.Buy qualified as Buy
 import Examples.MutualFunds.Common (InvestmentProcess (..))
-import Examples.MutualFunds.Sell qualified as Sell
+import Examples.MutualFunds.Process.Buy qualified as Buy
+import Examples.MutualFunds.Process.Sell qualified as Sell
 
 data InvestmentProcessId (p :: InvestmentProcess) id where
   BuyId :: id -> InvestmentProcessId 'Buy id
   SellId :: id -> InvestmentProcessId 'Sell id
 
+type family InvestmentMachineState (p :: InvestmentProcess) :: Type where
+  InvestmentMachineState 'Buy = Buy.State
+  InvestmentMachineState 'Sell = Sell.State
+
 data InvestmentProcessData (p :: InvestmentProcess) :: Type where
   BuyData :: SSM.AnyMachineData 'Buy Buy.State -> InvestmentProcessData 'Buy
   SellData :: SSM.AnyMachineData 'Sell Sell.State -> InvestmentProcessData 'Sell
-
--- type family AnyInvestmentMachineData (p :: InvestmentProcess) :: Type where
---   AnyInvestmentMachineData 'Buy = SSM.AnyMachineData 'Buy
---   AnyInvestmentMachineData 'Sell = Sell.MutualFundSale
 
 data AnyInvestmentProcessData where
   AnyInvestmentProcessData :: InvestmentProcessData p -> AnyInvestmentProcessData
@@ -48,6 +48,6 @@ groupByProcessType = Map.foldrWithKey go mempty
   go processId (AnyInvestmentProcessData (BuyData md)) pool = pool{buys = Map.insert processId md pool.buys}
   go processId (AnyInvestmentProcessData (SellData md)) pool = pool{sells = Map.insert processId md pool.sells}
 
--- resolveById :: (Ord id) => InvestmentProcessId p id -> InvestmentProcessPool id -> Maybe (SSM.AnyMachineData p (SSM.State p))
--- resolveById (BuyId pId) pool = Map.lookup pId pool.buys
--- resolveById (SellId pId) pool = Map.lookup pId pool.sells
+resolveById :: (Ord id) => InvestmentProcessId p id -> InvestmentProcessPool id -> Maybe (SSM.AnyMachineData p (InvestmentMachineState p))
+resolveById (BuyId pId) pool = Map.lookup pId pool.buys
+resolveById (SellId pId) pool = Map.lookup pId pool.sells

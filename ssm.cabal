@@ -26,12 +26,11 @@ source-repository head
 library
   exposed-modules:
       Control.SimpleStateMachine
-      Examples.MutualFunds.Buy
       Examples.MutualFunds.Common
       Examples.MutualFunds.Demo
-      Examples.MutualFunds.ExampleTypeable
-      Examples.MutualFunds.Sell
-      Examples.MutualFunds.Unified
+      Examples.MutualFunds.Process
+      Examples.MutualFunds.Process.Buy
+      Examples.MutualFunds.Process.Sell
       Lib
   other-modules:
       Paths_ssm

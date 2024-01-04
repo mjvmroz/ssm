@@ -8,6 +8,7 @@ module Control.SimpleStateMachine (
   initBlind,
   transitionBlind,
   dynamicTransition,
+  dynamicTransitionBlind,
 ) where
 
 import Data.Data (Typeable, eqT, (:~:) (Refl))
@@ -122,3 +123,12 @@ dynamicTransition t (AnyMachineData (MachineData props actualState :: MachineDat
   case eqT @actualState @expectedState of
     Just Refl -> Just <$> transition t (MachineData @m props actualState)
     Nothing -> pure Nothing
+
+dynamicTransitionBlind ::
+  forall m machineKind {machineTag :: machineKind} stateKind {expectedState :: stateKind} {targetState :: stateKind} yield.
+  (StateMachine m machineTag stateKind, Typeable expectedState, Typeable targetState) =>
+  Transition machineTag expectedState targetState yield ->
+  AnyMachineData machineTag stateKind ->
+  m (Maybe (MachineData machineTag targetState))
+dynamicTransitionBlind t amd =
+  fmap fst <$> dynamicTransition t amd

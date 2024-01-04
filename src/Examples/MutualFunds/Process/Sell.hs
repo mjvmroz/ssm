@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module Examples.MutualFunds.Sell where
+module Examples.MutualFunds.Process.Sell where
 
 import Control.SimpleStateMachine (MachineData (MachineData), StateMachine (..))
 import Data.Kind (Type)

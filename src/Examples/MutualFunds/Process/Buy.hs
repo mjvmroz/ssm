@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module Examples.MutualFunds.Buy (
+module Examples.MutualFunds.Process.Buy (
   State (..),
   Props (..),
   StateData (..),
