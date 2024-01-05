@@ -102,7 +102,7 @@ transition t d = transform <$> transitionState t d
  where
   transform (newState, yield) = (MachineData d.props newState, yield)
 
--- | Initialize a state machine. This should actually act on the yield, but for now we'll discard it.
+-- | Initialize a state machine. Temporary until I create a real runtime harness.
 initBlind ::
   forall m machineTag stateKind yield (s0 :: stateKind).
   (StateMachine m machineTag stateKind) =>
@@ -110,7 +110,7 @@ initBlind ::
   m (MachineData machineTag s0)
 initBlind i = fst <$> initialize i
 
--- | Run a transition on a state machine. This should actually act on the yield, but for now we'll discard it.
+-- | Run a transition on a state machine. Temporary until I create a real runtime harness.
 transitionBlind ::
   forall m machineTag stateKind yield (s1 :: stateKind) (s2 :: stateKind).
   (StateMachine m machineTag stateKind, Typeable s2) =>
@@ -119,6 +119,8 @@ transitionBlind ::
   m (MachineData machineTag s2)
 transitionBlind t d = fst <$> transition t d
 
+-- | Attempt a transition on a state machine, returning the new @MachineData@ and a yield if successful.
+--   Returns @Nothing@ if the transition is not valid per the dynamically determined state.
 dynamicTransition ::
   forall m machineTag stateKind {expectedState :: stateKind} {targetState :: stateKind} yield.
   (StateMachine m machineTag stateKind, Typeable expectedState, Typeable targetState) =>
@@ -130,6 +132,9 @@ dynamicTransition t (AnyMachineData (MachineData props actualState :: MachineDat
     Just Refl -> Just <$> transition t (MachineData props actualState)
     Nothing -> pure Nothing
 
+-- | Attempt a transition on a state machine, returning the new @MachineData@ if successful.
+--   Returns @Nothing@ if the transition is not valid per the dynamically determined state.
+--   Temporary until I create a real runtime harness.
 dynamicTransitionBlind ::
   forall m machineTag stateKind {expectedState :: stateKind} {targetState :: stateKind} yield.
   (StateMachine m machineTag stateKind, Typeable expectedState, Typeable targetState) =>
