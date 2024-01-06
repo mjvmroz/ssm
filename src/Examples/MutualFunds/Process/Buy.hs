@@ -19,7 +19,6 @@ import Examples.MutualFunds.Common (
   OrderId,
   ShareUnits,
  )
-import GHC.Generics (Generic)
 
 data State
   = Pending

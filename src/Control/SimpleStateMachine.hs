@@ -35,7 +35,7 @@ data AnyMachineData machineTag stateKind where
 -}
 data MachineData machineTag stateTag where
   MachineData ::
-    forall machineTag stateKind (stateTag :: stateKind).
+    forall machineTag stateTag.
     (Typeable machineTag, Typeable stateTag) =>
     { props :: Props machineTag
     , state :: StateData machineTag stateTag
