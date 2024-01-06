@@ -13,7 +13,9 @@ module Control.SimpleStateMachine (
 ) where
 
 import Data.Kind (Type)
-import Data.Typeable
+import Data.Typeable (eqT)
+import Type.Reflection
+import GHC.TypeNats (Nat)
 
 {- Represents the current state of a machine of known type but dynamic state. -}
 data AnyMachineData machineTag stateKind where
@@ -43,9 +45,12 @@ data MachineData machineTag stateTag where
 instance (Show (Props machineTag), Show (StateData machineTag stateTag)) => Show (MachineData machineTag stateTag) where
   show :: MachineData machineTag stateTag -> String
   show (MachineData props state) = mconcat
-    [ "MachineData ", show (typeRep (Proxy :: Proxy machineTag)), " ", show (typeRep (Proxy :: Proxy stateTag))
+    [ "MachineData ", show machineTag, " ", show stateTag
     , " {props = ", show props, ", ", "state = ", show state, "}"
     ]
+    where
+      machineTag = typeRep @machineTag
+      stateTag = typeRep @stateTag
 {- |
   A state machine is a relationship between types that represent a finite state machine:
   - @m@ constrains the monadic contexts in which the state machine can be run
